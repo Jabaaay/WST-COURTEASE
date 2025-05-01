@@ -12,11 +12,15 @@ use Stancl\Tenancy\Events;
 use Stancl\Tenancy\Jobs;
 use Stancl\Tenancy\Listeners;
 use Stancl\Tenancy\Middleware;
+use App\Models\SecondaryAdmin;
+use App\Models\Court;
+use App\Models\Booking;
+use App\Models\User;
 
 class TenancyServiceProvider extends ServiceProvider
 {
     // By default, no namespace is used to support the callable array syntax.
-    public static string $controllerNamespace = '';
+    public static string $controllerNamespace = 'App\\Http\\Controllers\\Tenant';
 
     public function events()
     {
@@ -27,6 +31,11 @@ class TenancyServiceProvider extends ServiceProvider
                 JobPipeline::make([
                     Jobs\CreateDatabase::class,
                     Jobs\MigrateDatabase::class,
+                    Jobs\CreateSecondaryAdmin::class,
+                    Jobs\CreateCourts::class,
+                    Jobs\CreateBookings::class,
+                    Jobs\CreateUsers::class,
+                    
                     // Jobs\SeedDatabase::class,
 
                     // Your own jobs to prepare the tenant.

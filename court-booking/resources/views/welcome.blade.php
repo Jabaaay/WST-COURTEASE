@@ -4,87 +4,224 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>Laravel</title>
+        <title>CourtEase - Court Booking System</title>
 
+        <!-- Bootstrap CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
+        <link href="https://fonts.bunny.net/css?family=poppins:400,500,600" rel="stylesheet" />
 
         <!-- Styles / Scripts -->
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
             @vite(['resources/css/app.css', 'resources/js/app.js'])
-        @else
-           
         @endif
     </head>
-    <body class="bg-[#FDFDFC] dark:bg-[#0a0a0a] text-[#1b1b18] flex p-6 lg:p-8 items-center lg:justify-center min-h-screen flex-col">
-        <header class="w-full lg:max-w-4xl max-w-[335px] text-sm mb-6 not-has-[nav]:hidden">
-            @if (Route::has('login'))
-                <nav class="flex items-center justify-end gap-4">
-                    @auth
-                        <a
-                            href="{{ url('/dashboard') }}"
-                            class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] border-[#19140035] hover:border-[#1915014a] border text-[#1b1b18] dark:border-[#3E3E3A] dark:hover:border-[#62605b] rounded-sm text-sm leading-normal"
-                        >
-                            Dashboard
-                        </a>
-                    @else
-                        <a
-                            href="{{ route('login') }}"
-                            class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] text-[#1b1b18] border border-transparent hover:border-[#19140035] dark:hover:border-[#3E3E3A] rounded-sm text-sm leading-normal"
-                        >
-                            Log in
-                        </a>
+    <style>
+        body
+        {
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+    <body class="bg-light">
+        <!-- Navigation -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+            <div class="container">
+                <a class="navbar-brand fw-bold text-primary" href="#">CourtEase</a>
+                <div class="d-flex">
+                    @if (Route::has('login'))
+                        @auth
+                            <a href="{{ url('/dashboard') }}" class="btn btn-outline-primary me-2">Dashboard</a>
+                        @else
+                            <a href="{{ route('login') }}" class="btn btn-outline-primary me-2">Log in</a>
+                            @if (Route::has('register'))
+                                <a href="{{ route('register') }}" class="btn btn-primary">Register</a>
+                            @endif
+                        @endauth
+                    @endif
+                </div>
+            </div>
+        </nav>
 
-                        @if (Route::has('register'))
-                            <a
-                                href="{{ route('register') }}"
-                                class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] border-[#19140035] hover:border-[#1915014a] border text-[#1b1b18] dark:border-[#3E3E3A] dark:hover:border-[#62605b] rounded-sm text-sm leading-normal">
-                                Register
-                            </a>
+        <!-- Hero Section -->
+        <section id="hero" class="py-5 bg-primary text-white">
+            <div class="container">
+                <div class="text-center py-5">
+                    <h1 class="display-4 fw-bold mb-4">
+                        Welcome to CourtEase
+                        <span class="d-block text-light-emphasis">Your Smart Court Booking Solution</span>
+                    </h1>
+                    <p class="lead mb-4">
+                        Streamline your court booking process with our easy-to-use platform. Manage reservations, track availability, and enhance your facility's efficiency.
+                    </p>
+                    <a href="#register" class="btn btn-light btn-lg">Get Started</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Registration Form Section -->
+        <section id="register" class="py-5 bg-light">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-md-6">
+                        <div class="card shadow">
+                            <div class="card-body p-4">
+                                <h2 class="text-center mb-4">Tenant Registration</h2>
+                                @if(session('success'))
+                                    <div class="alert alert-success" role="alert">
+                                        {{ session('success') }}
+                                    </div>
+                                @endif
+                                <form method="POST" action="{{ route('tenant.register') }}">
+                                    @csrf
+                                    <div class="mb-3">
+                                        <label for="name" class="form-label">Full Name</label>
+                                        <input type="text" class="form-control" id="name" name="name" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label">Email</label>
+                                        <input type="email" class="form-control" id="email" name="email" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="domain" class="form-label">Domain</label>
+                                        <input type="text" class="form-control" id="domain" name="domain" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100">Submit Application</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pricing Plans Section -->
+        <section id="pricing" class="py-5">
+            <div class="container">
+                <div class="text-center mb-5">
+                    <h2 class="display-5 fw-bold">Choose Your Plan</h2>
+                    <p class="lead text-muted">Select the perfect plan for your facility's needs</p>
+                </div>
+
+                <div class="row g-4">
+                    <!-- Basic Plan -->
+                    <div class="col-md-4">
+                        <div class="card h-100 shadow-sm border-primary">
+                            <div class="card-body p-4">
+                                <h3 class="card-title h5">Basic</h3>
+                                <p class="text-muted">Perfect for small facilities</p>
+                                <h4 class="display-6 fw-bold mb-4">$9.99<small class="text-muted fs-6">/month</small></h4>
+                                <ul class="list-unstyled mb-4">
+                                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Book at Regular Hours (8AM - 5PM)</li>
+                                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Up to 2 Bookings Per Week</li>
+                                    <li class="mb-2"><i class="bi bi-x-circle-fill text-danger me-2"></i>No Rescheduling</li>
+                                    <li class="mb-2"><i class="bi bi-x-circle-fill text-danger me-2"></i>Can't Book Weekends</li>
+                                </ul>
+                                <button onclick="openModal('basic')" class="btn btn-primary w-100">Get Started</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Premium Plan -->
+                    <div class="col-md-4">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body p-4">
+                                <h3 class="card-title h5">Premium</h3>
+                                <p class="text-muted">Ideal for medium facilities</p>
+                                <h4 class="display-6 fw-bold mb-4">$19.99<small class="text-muted fs-6">/month</small></h4>
+                                <ul class="list-unstyled mb-4">
+                                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Can Book Weekends</li>
+                                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Up to 4 Bookings Per Week</li>
+                                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>1 Reschedule Allowed per Booking</li>
+                                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Can Book Up to 2 Weeks in Advance</li>
+                                </ul>
+                                <button onclick="openModal('premium')" class="btn btn-primary w-100">Get Started</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ultimate Plan -->
+                    <div class="col-md-4">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body p-4">
+                                <h3 class="card-title h5">Ultimate</h3>
+                                <p class="text-muted">For large facilities</p>
+                                <h4 class="display-6 fw-bold mb-4">$49.99<small class="text-muted fs-6">/month</small></h4>
+                                <ul class="list-unstyled mb-4">
+                                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Full Access</li>
+                                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Unlimited Bookings</li>
+                                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Book Up to 1 month in advance</li>
+                                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Priority Slot Access</li>
+                                </ul>
+                                <button onclick="openModal('ultimate')" class="btn btn-primary w-100">Get Started</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Registration Modal -->
+        <div class="modal fade" id="registrationModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Register for <span id="planName" class="fw-bold"></span> Plan</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        @if(session('success'))
+                            <div class="alert alert-success" role="alert">
+                                {{ session('success') }}
+                            </div>
                         @endif
-                    @endauth
-                </nav>
-            @endif
-        </header>
-        <div class="flex items-center justify-center w-full transition-opacity opacity-100 duration-750 lg:grow starting:opacity-0">
-            <div class="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
-                <h2 class="text-2xl font-bold mb-6 text-center">Tenant Registration</h2>
-                @if(session('success'))
-                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
-                        <span class="block sm:inline">{{ session('success') }}</span>
+                        <form method="POST" action="{{ route('tenant.register') }}">
+                            @csrf
+                            <input type="hidden" name="plan" id="selectedPlan">
+                            <div class="mb-3">
+                                <label for="modal-name" class="form-label">Full Name</label>
+                                <input type="text" class="form-control" id="modal-name" name="name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="modal-email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="modal-email" name="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="modal-domain" class="form-label">Domain</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="modal-domain" name="domain" required placeholder="yourfacility">
+                                    <span class="input-group-text">.localhost</span>
+                                </div>
+                                <div class="form-text">This will be your unique subdomain</div>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Submit Application</button>
+                        </form>
                     </div>
-                @endif
-                <form method="POST" action="{{ route('tenant.register') }}" class="space-y-4">
-                    @csrf
-                    <div>
-                        <label for="name" class="block text-sm font-medium text-gray-700">Full Name</label>
-                        <input type="text" name="name" id="name" required
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                    </div>
-                    <div>
-                        <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                        <input type="email" name="email" id="email" required
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                    </div>
-                    <div>
-                        <label for="domain" class="block text-sm font-medium text-gray-700">Domain</label>
-                        <input type="text" name="domain" id="domain" required
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                    </div>
-                    <br>
-                    <div>
-                        <button type="submit"
-                            class="w-full flex justify-center py-2 px-4 border border rounded-md shadow-sm text-sm font-medium text-black bg-indigo-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            Submit Application
-                        </button>
-                    </div>
-                </form>
+                </div>
             </div>
         </div>
 
-        @if (Route::has('login'))
-            <div class="h-14.5 hidden lg:block"></div>
-        @endif
+        <!-- Footer -->
+        <footer class="bg-dark text-light py-4">
+            <div class="container text-center">
+                <p class="mb-0">&copy; 2024 CourtEase. All rights reserved.</p>
+            </div>
+        </footer>
+
+        <!-- Bootstrap Bundle with Popper -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Bootstrap Icons -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+        
+        <!-- JavaScript for Modal -->
+        <script>
+            function openModal(plan) {
+                const modal = new bootstrap.Modal(document.getElementById('registrationModal'));
+                document.getElementById('planName').textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
+                document.getElementById('selectedPlan').value = plan;
+                modal.show();
+            }
+        </script>
     </body>
 </html>

@@ -19,7 +19,6 @@ class VerifyTenantDomain
 
         // Check if domain exists and is accepted
         $tenant = Tenant::where('domain', $domain)
-                       ->where('status', 'accepted')
                        ->first();
 
         if (!$tenant) {
@@ -33,8 +32,40 @@ class VerifyTenantDomain
             return response()->view('errors.tenant-not-found', ['domain' => $domain], 404);
         }
 
-        // Store tenant in request for later use
+        // Check if tenant is disabled
+        if ($tenant->status === 'disabled') {
+            \Log::warning('Attempt to access disabled tenant domain', [
+                'domain' => $domain,
+                'tenant_id' => $tenant->id,
+                'ip' => $request->ip()
+            ]);
+            
+            return response()->view('errors.tenant-disabled', [
+                'domain' => $domain,
+                'tenant' => $tenant
+            ], 403);
+        }
+
+        // Check if tenant is accepted
+        if ($tenant->status !== 'accepted') {
+            \Log::warning('Attempt to access non-accepted tenant domain', [
+                'domain' => $domain,
+                'tenant_id' => $tenant->id,
+                'status' => $tenant->status
+            ]);
+            
+            return response()->view('errors.tenant-not-accepted', [
+                'domain' => $domain,
+                'tenant' => $tenant
+            ], 403);
+        }
+
+        // Store tenant in request and session for later use
         $request->merge(['tenant' => $tenant]);
+        session(['tenant' => $tenant]);
+        
+        // Set the tenant's database connection
+        config(['database.connections.tenant.database' => $tenant->database_name]);
         
         return $next($request);
     }

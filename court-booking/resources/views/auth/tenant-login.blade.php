@@ -4,47 +4,82 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Tenant Login</title>
+        <!-- Bootstrap CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <!-- Bootstrap Icons -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+        <!-- Poppins Font -->
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="antialiased">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
-            <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
-                <h2 class="text-center text-2xl font-bold mb-6">Tenant Login</h2>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+    <body>
+        <div class="container">
+            <div class="row justify-content-center min-vh-100 align-items-center">
+
+            
+                <div class="col-md-6 col-lg-4">
 
                 @if ($errors->any())
-                    <div class="mb-4">
-                        <div class="font-medium text-red-600">Whoops! Something went wrong.</div>
-                        <ul class="mt-3 list-disc list-inside text-sm text-red-600">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
+                                <div class="alert alert-danger">
+                                    <div class="d-flex justify-content-between align-items-center">Invalid Email or Password!
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                </div>
+                            @endif
+                    <div class="card shadow rounded-3">
+                        <div class="card-body p-4 bg-dark">
+                            <div class="text-center d-flex justify-content-center">
+                                <img src="{{ asset('assets/img/COURT.png') }}" alt="" style="width: 150px; height: 100px;">
+                            </div>
 
-                <form method="POST" action="{{ route('tenant.login') }}">
-                    @csrf
+                        
 
-                    <div class="mt-4">
-                        <label for="email" class="block font-medium text-sm text-gray-700">Email</label>
-                        <input id="email" type="email" name="email" value="{{ old('email') }}" required
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                    </div>
+                            <form method="POST" action="{{ route('tenant.login') }}">
+                                @csrf
 
-                    <div class="mt-4">
-                        <label for="password" class="block font-medium text-sm text-gray-700">Password</label>
-                        <input id="password" type="password" name="password" required
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                    </div>
+                                <div class="mb-3">
+                                    <label  for="email" class="form-label text-white text-sm">Email</label>
+                                    <input id="email" type="email" name="email" value="{{ old('email') }}" required
+                                        class="form-control bg-dark text-white">
+                                </div>
 
-                    <div class="flex items-center justify-end mt-4">
-                        <button type="submit"
-                        class="w-full flex justify-center py-2 px-4 border border rounded-md shadow-sm text-sm font-medium text-black bg-indigo-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        Log in
-                        </button>
+                                <div class="mb-3">
+                                    <label for="password" class="form-label text-white text-sm">Password</label>
+                                    <input id="password" type="password" name="password" required
+                                        class="form-control bg-dark text-white">
+                                </div>
+
+                                <div class="mb-3">
+                                    <a href="{{ route('auth.tenant-register-user') }}" class="text-decoration-none text-white text-sm">Don't have an account? <span class="text-warning">Register</span></a>
+                                </div>
+
+                                <div class="d-grid mt-3 bg-outline-primary">
+                                    <button type="submit" class="btn btn-outline-primary w-100 rounded-0">
+                                        <i class="bi bi-box-arrow-in-right text-white"></i>
+                                        Log in
+                                    </button>
+                                </div>
+
+                            </form>
+
+                            <div class="d-grid mt-3">
+                                <button type="button" class="btn btn-outline-info w-100 rounded-0">
+                                    <i class="bi bi-google text-white"></i>
+                                    Sign in with Google
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
+
+        <!-- Bootstrap JS Bundle with Popper -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     </body>
 </html> 

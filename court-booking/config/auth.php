@@ -36,6 +36,10 @@ return [
     */
 
     'guards' => [
+        'secondary-admin' => [
+            'driver' => 'session',
+            'provider' => 'secondary-admin',
+        ],
         'web' => [
             'driver' => 'session',
             'provider' => 'users',
@@ -60,6 +64,10 @@ return [
     */
 
     'providers' => [
+        'secondary-admin' => [
+            'driver' => 'session',
+            'provider' => 'secondary-admin',
+        ],
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\User::class),

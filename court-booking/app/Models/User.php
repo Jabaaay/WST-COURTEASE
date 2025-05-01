@@ -18,9 +18,11 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name',
+        'first_name',
         'email',
         'password',
+        'address',
+        'contact_number',
     ];
 
     /**
@@ -38,11 +40,24 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
-    protected function casts(): array
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+    ];
+
+    public function tenant()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return tenant();
+    }
+
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+        
+        // Set the database name for the tenant connection
+        if (session()->has('tenant')) {
+            config(['database.connections.tenant.database' => session('tenant')->database_name]);
+            $this->setConnection('tenant');
+        }
     }
 }

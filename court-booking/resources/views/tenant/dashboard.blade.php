@@ -1,51 +1,210 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Tenant Dashboard</title>
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    </head>
-    <body class="antialiased">
-        <div class="min-h-screen bg-gray-100">
-            <nav class="bg-white shadow-sm">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div class="flex justify-between h-16">
-                        <div class="flex">
-                            <div class="flex-shrink-0 flex items-center">
-                                <h1 class="text-xl font-bold">Tenant Dashboard</h1>
-                            </div>
-                        </div>
-                        <div class="flex items-center">
-                            <form method="POST" action="{{ route('tenant.logout') }}">
-                                @csrf
-                                <button type="submit" class="text-gray-600 hover:text-gray-900">Logout</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </nav>
+<link rel="stylesheet" href="{{ asset('assets/vendors/mdi/css/materialdesignicons.min.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/vendors/css/vendor.bundle.base.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+<link rel="shortcut icon" href="{{ asset('assets/images/favicon.png') }}" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
-            <main>
-                <div class="py-12">
-                    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                        <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                            <div class="p-6 bg-white border-b border-gray-200">
-                                <h2 class="text-2xl font-bold mb-4">Welcome, {{ session('tenant')->name }}!</h2>
-                                <p>You are logged in as a tenant.</p>
-                                <div class="mt-4">
-                                    <h3 class="text-lg font-semibold">Your Information:</h3>
-                                    <ul class="mt-2">
-                                        <li><strong>Domain:</strong> {{ session('tenant')->domain }}</li>
-                                        <li><strong>Email:</strong> {{ session('tenant')->email }}</li>
-                                        <li><strong>Database:</strong> {{ session('tenant')->database_name }}</li>
-                                    </ul>
-                                </div>
+
+<div class="container-scroller">
+
+    @include('layouts.tenant-sidebar')
+
+    @include('layouts.tenant-header')
+
+        <div class="container-fluid page-body-wrapper">
+            <div class="main-panel">
+
+                <div class="content-wrapper">
+
+                <div class="row" >
+                <div class="col-sm-3 grid-margin">
+                <div class="card border-info">
+                  <div class="card-body">
+                    <h5>Total Bookings</h5>
+                    <div class="row">
+                      <div class="col-8 col-sm-12 col-xl-8 my-auto">
+                        <div class="d-flex d-sm-block d-md-flex align-items-center">
+                          <h2 class="mb-0">{{ $allBookings }}</h2>
+                        </div>
+                      </div>
+                      <div class="col-4 col-sm-12 col-xl-4 text-center text-xl-right">
+                        <i class="icon-lg mdi mdi-calendar-check-outline text-info ml-auto"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-sm-3 grid-margin">
+                <div class="card border-success">
+                  <div class="card-body">
+                    <h5>Approved</h5>
+                    <div class="row">
+                      <div class="col-8 col-sm-12 col-xl-8 my-auto">
+                        <div class="d-flex d-sm-block d-md-flex align-items-center">
+                          <h2 class="mb-0">{{ $approvedBookings }}</h2>
+                        </div>
+                      </div>
+                      <div class="col-4 col-sm-12 col-xl-4 text-center text-xl-right">
+                        <i class="icon-lg mdi mdi-check-circle-outline text-success ml-auto"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-sm-3 grid-margin">
+                <div class="card border-danger">
+                  <div class="card-body">
+                    <h5>Rejected</h5>
+                    <div class="row">
+                      <div class="col-8 col-sm-12 col-xl-8 my-auto">
+                        <div class="d-flex d-sm-block d-md-flex align-items-center">
+                          <h2 class="mb-0">{{ $rejectedBookings }}</h2>
+                        </div>
+                      </div>
+                      <div class="col-4 col-sm-12 col-xl-4 text-center text-xl-right">
+                        <i class="icon-lg mdi mdi-close-circle-outline text-danger ml-auto"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-sm-3 grid-margin">
+                <div class="card border-primary">
+                  <div class="card-body">
+                    <h5>Users</h5>
+                    <div class="row">
+                      <div class="col-8 col-sm-12 col-xl-8 my-auto">
+                        <div class="d-flex d-sm-block d-md-flex align-items-center">
+                          <h1 class="mb-0">{{ $userCount }}</h1>
+                    
+                        </div>
+              
+                      </div>
+                      <div class="col-4 col-sm-12 col-xl-4 text-center text-xl-right">
+                        <i class="icon-lg mdi mdi-account-group-outline text-primary ml-auto"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+
+                </div>
+                
+                    <div class="row ">
+
+
+                  
+
+                    <div class="col-lg-6 grid-margin stretch-card">
+                      <div class="card">
+                        <div class="card-body">
+                          <h4 class="card-title">Bar chart</h4>
+                          <canvas id="barChart" style="height:230px"></canvas>
+                        </div>
+                      </div>
+                    </div>
+
+              <div class="col-lg-6 grid-margin stretch-card">
+                <div class="card">
+                  <div class="card-body">
+                    <h4 class="card-title">Pie chart</h4>
+                    <canvas id="pieChart" style="height:250px"></canvas>
+                  </div>
+                </div>
+              </div>
+                    <div class="col-12 grid-margin">
+                        <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title d-flex justify-content-between">Recent Bookings
+                            </h4>
+
+
+                            <div class="table-responsive">
+
+                            <table class="table">
+                                <thead>
+                                <tr>
+             
+                                <th>Name</th>
+                                    <th>Event Name</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Equipment</th>
+                                    <th>Participants</th>
+                                    <th>Status</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                      
+                                @foreach($bookings as $booking)
+                                <tr>
+                                    <td>{{ $booking->name }}</td>
+                                    <td>{{ $booking->event_name }}</td>
+                                    <td>{{ $booking->start_date }}</td>
+                                    <td>{{ $booking->end_date }}</td>
+                                    <td>{{ $booking->equipment_request }}</td>
+                                    <td>{{ $booking->number_of_participants }}</td>
+                                    <td>
+                                      @if($booking->status == 'pending')
+                                        <span class="badge badge-outline-warning">Pending</span>
+                                      @elseif($booking->status == 'approved')
+                                        <span class="badge badge-outline-success">Approved</span>
+                                      @elseif($booking->status == 'rejected')
+                                        <span class="badge badge-outline-danger">Rejected</span>
+                                      @endif
+                                    </td>
+                                </tr>
+
+                                
+                                @endforeach
+
+                                <tr>
+                                  @if($bookings->count() == 0)
+                                  <td colspan="7" class="text-center">
+                                    No bookings found
+                                  </td>
+                                  @endif
+                                </tr>
+                                </tbody>
+                            </table>
                             </div>
                         </div>
+                        </div>
+                    </div>
                     </div>
                 </div>
-            </main>
+            </div>
         </div>
-    </body>
-</html> 
+
+</div>
+
+<script src="{{ asset('assets/vendors/js/vendor.bundle.base.js') }}"></script>
+<script src="{{ asset('assets/vendors/chart.js/Chart.min.js') }}"></script>
+<script src="{{ asset('assets/vendors/progressbar.js/progressbar.min.js') }}"></script>
+<script src="{{ asset('assets/vendors/jvectormap/jquery-jvectormap.min.js') }}"></script>
+<script src="{{ asset('assets/vendors/jvectormap/jquery-jvectormap-world-mill-en.js') }}"></script>
+<script src="{{ asset('assets/vendors/owl-carousel-2/owl.carousel.min.js') }}"></script>
+
+<script src="{{ asset('assets/js/off-canvas.js') }}"></script>
+<script src="{{ asset('assets/js/hoverable-collapse.js') }}"></script>
+<script src="{{ asset('assets/js/misc.js') }}"></script>
+<script src="{{ asset('assets/js/settings.js') }}"></script>
+<script src="{{ asset('assets/js/todolist.js') }}"></script>
+
+<script src="{{ asset('assets/js/dashboard.js') }}"></script>
+
+<script src="{{ asset('assets/js/chart.js') }}"></script>
+
+
+
+
+
+
+
+
+
+
