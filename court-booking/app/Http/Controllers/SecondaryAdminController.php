@@ -10,6 +10,7 @@ use App\Models\Tenant;
 use App\Models\SecondaryAdmin;
 use App\Models\Booking;
 use App\Models\User;
+use App\Models\TenantAvailability;
 
 class SecondaryAdminController extends Controller
 {
@@ -118,6 +119,101 @@ class SecondaryAdminController extends Controller
         return view('secondary-admin.bookings.index', compact('bookings'));
     }
 
+    public function deleteBooking($id)
+    {
+
+        $domain = request()->getHost();
+        $domain = str_replace('.localhost', '', $domain);
+        
+        $tenant = Tenant::where('domain', $domain)
+                       ->where('status', 'accepted')
+                       ->first();
+ 
+        if (!$tenant) {
+            return back()->with('error', 'Invalid tenant domain.');
+        }
+ 
+        // Set the tenant's database connection
+        Config::set('database.connections.tenant.database', $tenant->database_name);
+        DB::purge('tenant');
+        DB::reconnect('tenant');
+
+        // Delete the booking
+        DB::connection('tenant')
+            ->table('bookings')
+            ->where('id', $id)
+            ->delete();
+
+        return redirect()->route('secondary-admin.bookings.index')->with('success', 'Booking deleted successfully.');
+    }
+
+    public function createAvailability()
+    {
+        return view('secondary-admin.availability.create');
+    }
+
+    public function storeAvailability(Request $request)
+    {
+        // Get tenant using domain from CENTRAL DB
+        $domain = request()->getHost();
+        $domain = str_replace('.localhost', '', $domain);
+    
+        $tenant = Tenant::where('domain', $domain)
+                       ->where('status', 'accepted')
+                       ->first();
+    
+        if (!$tenant) {
+            return back()->with('error', 'Invalid tenant domain.');
+        }
+    
+        // Set up tenant database connection
+        Config::set('database.connections.tenant.database', $tenant->database_name);
+        DB::purge('tenant');
+        DB::reconnect('tenant');
+    
+        // Validate request
+        $request->validate([
+            'event_name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after:start_date',
+        ]);
+    
+        // Get Secondary Admin from CENTRAL DB
+        $secondaryAdmin = SecondaryAdmin::find(session('secondary_admin_id'));
+    
+        if (!$secondaryAdmin) {
+            return back()->with('error', 'Secondary admin not found.');
+        }
+    
+        // Optional: Check if secondary admin really belongs to this tenant
+        if ($secondaryAdmin->tenant_id != $tenant->id) {
+            return back()->with('error', 'Unauthorized access to tenant.');
+        }
+    
+        // Save data in tenant DB
+        DB::connection('tenant')->table('tenant_availabilities')->insert([
+            'tenant_id' => $tenant->id,
+            'event_name' => $request->event_name,
+            'description' => $request->description,
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    
+        \Log::info('Availability created successfully', [
+            'tenant_id' => $tenant->id,
+            'event_name' => $request->event_name,
+        ]);
+    
+        return redirect()->route('secondary-admin.availability.index')
+            ->with('success', 'Availability request submitted successfully.');
+    }
+    
+    
+
+
     public function calendar()
     {
         try {
@@ -170,6 +266,10 @@ class SecondaryAdminController extends Controller
 
     }
 
+    
+
+
+
     public function users()
     {
         try {
@@ -211,6 +311,46 @@ class SecondaryAdminController extends Controller
 
     public function availability()
     {
-        return view('secondary-admin.availability.index');
+
+        try {
+            // Get the tenant from the domain
+            $domain = request()->getHost();
+            $domain = str_replace('.localhost', '', $domain);
+            
+            $tenant = Tenant::where('domain', $domain)
+                           ->where('status', 'accepted')
+                           ->first();
+
+            if (!$tenant) {
+                return back()->with('error', 'Invalid tenant domain.');
+            }
+
+            // Set the tenant's database connection
+            Config::set('database.connections.tenant.database', $tenant->database_name);
+            DB::purge('tenant');
+            DB::reconnect('tenant');
+
+            // Get availabilities for this tenant
+            $availabilities = DB::connection('tenant')
+                ->table('tenant_availabilities')
+                ->where('tenant_id', $tenant->id)
+                ->orderBy('start_date', 'asc')
+                ->get();
+
+            \Log::info('Availabilities retrieved', [
+                'availabilities_count' => $availabilities->count(),
+                'tenant_database' => $tenant->database_name
+            ]);
+
+            return view('secondary-admin.availability.index', compact('availabilities'));
+
+        } catch (\Exception $e) {
+            \Log::error('Error in availabilities', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->with('error', 'Failed to load availabilities data. Please try again.');
+        }
+
     }
 }

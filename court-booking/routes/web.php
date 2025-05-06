@@ -59,6 +59,7 @@ Route::middleware(['user'])->group(function () {
     Route::delete('/user/my-booking/{id}', [TenantUserController::class, 'deleteBooking'])->name('user.my-booking.delete');
     Route::get('/user/my-booking/{id}/edit', [TenantUserController::class, 'editBooking'])->name('user.my-booking.edit');
     Route::put('/user/my-booking/{id}', [TenantUserController::class, 'updateBooking'])->name('user.my-booking.update');
+    Route::delete('/user/booking-history/{id}', [TenantUserController::class, 'deleteBookingHistory'])->name('user.booking-history.delete');
     Route::post('/user/logout', [UserAuthController::class, 'logout'])->name('user.logout');
     
 
@@ -96,6 +97,7 @@ Route::middleware(['tenant'])->group(function () {
     Route::delete('/tenant/bookings/{id}', [TenantController::class, 'deleteBooking'])->name('tenant.bookings.delete');
     Route::put('/tenant/bookings/{id}/reject', [TenantController::class, 'rejectBooking'])->name('tenant.bookings.reject');
     Route::put('/tenant/bookings/{id}/accept', [TenantController::class, 'acceptBooking'])->name('tenant.bookings.accept');
+    
 
     // Calendar Route
     Route::get('/tenant/calendar', [TenantController::class, 'calendar'])->name('tenant.calendar');
@@ -119,6 +121,9 @@ Route::middleware(['secondary-admin'])->group(function () {
     Route::get('/secondary-admin/calendar', [SecondaryAdminController::class, 'calendar'])->name('secondary-admin.calendar.index');
     Route::get('/secondary-admin/users', [SecondaryAdminController::class, 'users'])->name('secondary-admin.users.index');
     Route::get('/secondary-admin/availability', [SecondaryAdminController::class, 'availability'])->name('secondary-admin.availability.index');
+    Route::get('/secondary-admin/availability/create', [SecondaryAdminController::class, 'createAvailability'])->name('secondary-admin.availability.create');
+    Route::post('/secondary-admin/availability', [SecondaryAdminController::class, 'storeAvailability'])->name('secondary-admin.availability.store');
+    Route::delete('/secondary-admin/bookings/{id}', [SecondaryAdminController::class, 'deleteBooking'])->name('secondary-admin.bookings.delete');
 });
 
 // Domain-based routes (for direct access to tenant's domain)

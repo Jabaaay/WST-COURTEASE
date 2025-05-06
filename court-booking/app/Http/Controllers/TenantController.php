@@ -270,23 +270,40 @@ class TenantController extends Controller
             'role' => 'required|in:sk,secretary,captain',
         ]);
 
-        // check if the email is already in the database
-        $secondaryAdmin = SecondaryAdmin::where('email', $request->email)->first();
-        if ($secondaryAdmin) {
-            return redirect()->back()->with('error', 'Email already exists.');
-        }
+        // Get the tenant from the domain
+        $domain = request()->getHost();
+        $domain = str_replace('.localhost', '', $domain);
         
+        $tenant = Tenant::where('domain', $domain)
+                       ->where('status', 'accepted')
+                       ->first();
+
+        if (!$tenant) {
+            return back()->with('error', 'Invalid tenant domain.');
+        }
+
+        // Set the tenant's database connection
+        Config::set('database.connections.tenant.database', $tenant->database_name);
+        DB::purge('tenant');
+        DB::reconnect('tenant');
 
         // Generate a random password
-        $password = Str::random(10);
+        $password = 'password'; //Str::random(10);
 
         // Create the secondary admin
-        $secondaryAdmin = SecondaryAdmin::create([
-            'tenant_id' => session('tenant_id'),
+        $secondaryAdmin = new SecondaryAdmin([
+            'tenant_id' => $tenant->id,
             'name' => $request->name,
             'email' => $request->email,
             'password' => bcrypt($password),
             'role' => $request->role,
+        ]);
+
+        $secondaryAdmin->save();
+        
+        \Log::info('Secondary admin created successfully', [
+            'secondary_admin' => $secondaryAdmin,
+            'secondary_admin_id' => $secondaryAdmin->id,
         ]);
 
         // Send email with credentials
@@ -568,15 +585,9 @@ class TenantController extends Controller
 
     public function deleteBooking($id)
     {
-        // $booking = Booking::where('tenant_id', session('tenant_id'))
-        //     ->findOrFail($id);
-        // $booking->delete();
-
-        // return redirect()->route('tenant.bookings')
-        //     ->with('success', 'Booking deleted successfully.');
-
-        return redirect()->route('tenant.bookings')
-            ->with('success', 'Booking deleted successfully.');
+        $booking = Booking::findOrFail($id);
+        $booking->delete();
+        return redirect()->route('tenant.bookings')->with('success', 'Booking deleted successfully.');
     }
 
     // Calendar

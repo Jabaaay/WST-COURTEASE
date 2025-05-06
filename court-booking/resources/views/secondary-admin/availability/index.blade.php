@@ -32,7 +32,7 @@
                         <div class="card">
                         <div class="card-body">
                             <h4 class="card-title d-flex justify-content-between">Manage Availability
-                                <a href="{{ route('tenant.availability.create') }}" class="btn btn-outline-primary btn-fw">+ Add Availability</a>
+                                <a href="{{ route('secondary-admin.availability.create') }}" class="btn btn-outline-primary btn-fw">+ Add Availability</a>
                             </h4>
 
 
@@ -51,6 +51,22 @@
                                 </thead>
                                 <tbody>
                                 
+                                @foreach ($availabilities as $availability)
+                                <tr>
+                                    <td>{{ $availability->event_name }}</td>
+                                    <td>{{ $availability->description }}</td>
+                                    <td>{{ $availability->start_date }}</td>
+                                    <td>{{ $availability->end_date }}</td>
+                                    <td>
+                                        <a href="" class="btn btn-outline-primary btn-sm">Edit</a>
+                                        <form action="" method="POST" style="display: inline;">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                @endforeach
                             
                                 </tbody>
 

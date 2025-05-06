@@ -253,6 +253,13 @@ class TenantUserController extends Controller
         return redirect()->route('user.my-booking.index')->with('success', 'Booking deleted successfully.');
     }
 
+    public function deleteBookingHistory($id)
+    {
+        $booking = Booking::findOrFail($id);
+        $booking->delete();
+        return redirect()->route('user.booking-history.index')->with('success', 'Booking deleted successfully.');
+    }
+
     public function checkAvailability()
     {
         try {
