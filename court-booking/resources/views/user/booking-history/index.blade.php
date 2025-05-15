@@ -73,20 +73,17 @@
                                     </td>
 
                                     <td class="text-center">
+                                        <a href="{{ route('user.booking-history.show', $booking->id) }}" class="btn btn-outline-info btn-sm">
+                                            <i class="mdi mdi-eye"></i>
+                                        </a>
 
-                                
-                                        
-                                            <form action="" method="POST" style="display: inline;">
-                                              
-                                            <button type="submit" class="btn btn-outline-info btn-sm"><i class="mdi mdi-eye"></i></button>
-                                            </form>
-
-                                            <form action="{{ route('user.booking-history.delete', $booking->id) }}" method="POST" class="d-inline" id="delete-form-{{ $booking->id }}">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="confirmDelete({{ $booking->id }})"><i class="mdi mdi-delete"></i></button>
-                                                </form>
-                                       
+                                        <form action="{{ route('user.booking-history.delete', $booking->id) }}" method="POST" class="d-inline" id="delete-form-{{ $booking->id }}">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="button" class="btn btn-outline-danger btn-sm" onclick="confirmDelete({{ $booking->id }})">
+                                                <i class="mdi mdi-delete"></i>
+                                            </button>
+                                        </form>
                                     </td>
 
                                 </tr>

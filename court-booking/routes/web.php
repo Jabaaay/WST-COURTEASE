@@ -5,6 +5,7 @@ use App\Http\Controllers\TenantController;
 use App\Http\Controllers\TenantAuthController;
 use App\Http\Controllers\UserAuthController;
 use App\Http\Controllers\Tenant\TenantUserController;
+use App\Http\Controllers\Auth\GoogleController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\VerifyTenantDomain;
 use App\Http\Middleware\EnsureTenantAccess;
@@ -51,6 +52,10 @@ Route::post('/tenant/user/register', [UserRegistrationController::class, 'regist
 // User Dashboard Routes
 Route::middleware(['user'])->group(function () {
     Route::get('/user/dashboard', [TenantUserController::class, 'dashboard'])->name('user.dashboard');
+    Route::get('/user/profile', [TenantUserController::class, 'profile'])->name('user.profile');
+    Route::get('/user/settings', [TenantUserController::class, 'settings'])->name('user.settings');
+    Route::put('/user/profile', [TenantUserController::class, 'updateProfile'])->name('user.profile.update');
+    Route::put('/user/settings', [TenantUserController::class, 'updateSettings'])->name('user.settings.update');
     Route::get('/user/my-booking', [TenantUserController::class, 'myBooks'])->name('user.my-booking.index');
     Route::get('/user/my-booking/create', [TenantUserController::class, 'createBooking'])->name('user.my-booking.create');
     Route::get('/user/check-availability', [TenantUserController::class, 'checkAvailability'])->name('user.check-availability');
@@ -60,6 +65,7 @@ Route::middleware(['user'])->group(function () {
     Route::get('/user/my-booking/{id}/edit', [TenantUserController::class, 'editBooking'])->name('user.my-booking.edit');
     Route::put('/user/my-booking/{id}', [TenantUserController::class, 'updateBooking'])->name('user.my-booking.update');
     Route::delete('/user/booking-history/{id}', [TenantUserController::class, 'deleteBookingHistory'])->name('user.booking-history.delete');
+    Route::get('/user/booking-history/{id}', [TenantUserController::class, 'showBookingHistory'])->name('user.booking-history.show');
     Route::post('/user/logout', [UserAuthController::class, 'logout'])->name('user.logout');
     
 
@@ -71,6 +77,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/tenant/{id}/disable', [TenantController::class, 'disable'])->name('tenant.disable');
     Route::post('/tenant/{id}/enable', [TenantController::class, 'enable'])->name('tenant.enable');
     Route::post('/tenant/{id}/premium', [TenantController::class, 'premium'])->name('tenant.premium');
+    Route::post('/tenant/{id}/basic', [TenantController::class, 'basic'])->name('tenant.basic');
 });
 
 Route::get('/tenant/login', [TenantAuthController::class, 'showLoginForm'])->name('tenant.login');
@@ -81,6 +88,12 @@ Route::middleware(['tenant'])->group(function () {
     // Dashboard
     Route::get('/tenant/dashboard', [TenantController::class, 'dashboard'])->name('tenant.dashboard');
     
+    // Profile and Settings Routes
+    Route::get('/tenant/profile', [TenantController::class, 'profile'])->name('tenant.profile');
+    Route::get('/tenant/settings', [TenantController::class, 'settings'])->name('tenant.settings');
+    Route::put('/tenant/profile', [TenantController::class, 'updateProfile'])->name('tenant.profile.update');
+    Route::put('/tenant/settings', [TenantController::class, 'updateSettings'])->name('tenant.settings.update');
+    
     // Secondary Admin Routes
     Route::get('/tenant/secondary-admins', [TenantController::class, 'secondaryAdmins'])->name('tenant.secondary-admins');
     Route::get('/tenant/secondary-admins/create', [TenantController::class, 'createSecondaryAdmin'])->name('tenant.secondary-admins.create');
@@ -90,14 +103,15 @@ Route::middleware(['tenant'])->group(function () {
     Route::delete('/tenant/secondary-admins/{id}', [TenantController::class, 'destroySecondaryAdmin'])->name('tenant.secondary-admins.destroy');
 
     // Bookings Routes
-    Route::get('/tenant/bookings', [TenantController::class, 'bookings'])->name('tenant.bookings');
+    Route::get('/tenant/bookings', [TenantController::class, 'bookings'])->name('tenant.bookings.index');
+    Route::get('/tenant/bookings/{id}', [TenantController::class, 'showBooking'])->name('tenant.bookings.show');
     Route::get('/tenant/bookings/create', [TenantController::class, 'createBooking'])->name('tenant.bookings.create');
     Route::post('/tenant/bookings', [TenantController::class, 'storeBooking'])->name('tenant.bookings.store');
     Route::get('/tenant/bookings/{id}/edit', [TenantController::class, 'editBooking'])->name('tenant.bookings.edit');
-    Route::delete('/tenant/bookings/{id}', [TenantController::class, 'deleteBooking'])->name('tenant.bookings.delete');
-    Route::put('/tenant/bookings/{id}/reject', [TenantController::class, 'rejectBooking'])->name('tenant.bookings.reject');
+    Route::put('/tenant/bookings/{id}', [TenantController::class, 'updateBooking'])->name('tenant.bookings.update');
+    Route::delete('/tenant/bookings/{id}', [TenantController::class, 'deleteBooking'])->name('tenant.bookings.destroy');
     Route::put('/tenant/bookings/{id}/accept', [TenantController::class, 'acceptBooking'])->name('tenant.bookings.accept');
-    
+    Route::put('/tenant/bookings/{id}/reject', [TenantController::class, 'rejectBooking'])->name('tenant.bookings.reject');
 
     // Calendar Route
     Route::get('/tenant/calendar', [TenantController::class, 'calendar'])->name('tenant.calendar');
@@ -112,6 +126,9 @@ Route::middleware(['tenant'])->group(function () {
 
     // Users Routes
     Route::get('/tenant/users', [TenantController::class, 'users'])->name('tenant.users.index');
+
+    // Plan Upgrade Route
+    Route::post('/tenant/upgrade-plan', [TenantController::class, 'upgradePlan'])->name('tenant.upgrade-plan');
 });
 
 Route::middleware(['secondary-admin'])->group(function () {
@@ -124,6 +141,11 @@ Route::middleware(['secondary-admin'])->group(function () {
     Route::get('/secondary-admin/availability/create', [SecondaryAdminController::class, 'createAvailability'])->name('secondary-admin.availability.create');
     Route::post('/secondary-admin/availability', [SecondaryAdminController::class, 'storeAvailability'])->name('secondary-admin.availability.store');
     Route::delete('/secondary-admin/bookings/{id}', [SecondaryAdminController::class, 'deleteBooking'])->name('secondary-admin.bookings.delete');
+    Route::get('/secondary-admin/bookings/{id}', [SecondaryAdminController::class, 'showBooking'])->name('secondary-admin.bookings.show');
+    Route::get('/secondary-admin/profile', [SecondaryAdminController::class, 'profile'])->name('secondary-admin.profile');
+    Route::get('/secondary-admin/settings', [SecondaryAdminController::class, 'settings'])->name('secondary-admin.settings');
+    Route::post('/secondary-admin/bookings/{id}/approve', [SecondaryAdminController::class, 'approveBooking'])->name('secondary-admin.bookings.approve');
+    Route::post('/secondary-admin/bookings/{id}/reject', [SecondaryAdminController::class, 'rejectBooking'])->name('secondary-admin.bookings.reject');
 });
 
 // Domain-based routes (for direct access to tenant's domain)
@@ -134,5 +156,9 @@ Route::domain('{domain}.localhost')->group(function () {
         });
     });
 });
+
+// Google Authentication Routes
+Route::get('auth/google', [GoogleController::class, 'redirectToGoogle'])->name('auth.google');
+Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback'])->name('auth.google.callback');
 
 require __DIR__.'/auth.php';

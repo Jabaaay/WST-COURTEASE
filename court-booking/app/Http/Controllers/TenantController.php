@@ -17,10 +17,17 @@ use Carbon\Carbon;
 use App\Models\TenantAvailability;
 use App\Models\TenantUser;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Hash;
+use App\Services\PlanService;
 
 
 class TenantController extends Controller
 {
+    public function __construct()
+    {
+        //
+    }
+
     public function showRegistrationForm()
     {
         return view('auth.tenant-register-user');
@@ -109,7 +116,7 @@ class TenantController extends Controller
                        ->subject('Your Tenant Account Has Been Approved');
             });
 
-            return redirect()->back()->with('status', 'Tenant application accepted, database created, and credentials sent.');
+            return redirect()->back()->with('success', 'Tenant application accepted, database created, and credentials sent.');
         } catch (\Exception $e) {
             \Log::error('Tenant acceptance failed', [
                 'tenant' => $tenant->name,
@@ -124,7 +131,7 @@ class TenantController extends Controller
         $tenant = Tenant::findOrFail($id);
         $tenant->update(['status' => 'rejected']);
 
-        return redirect()->back()->with('status', 'Tenant application rejected.');
+        return redirect()->back()->with('success', 'Tenant application rejected.');
     }
 
     public function disable($id)
@@ -161,39 +168,20 @@ class TenantController extends Controller
         return redirect()->back()->with('success', 'Tenant account has been enabled. and Your Domain is available again.');
     }
 
-    public function premium(Request $request, $id)
+    public function premium($id)
     {
         $tenant = Tenant::findOrFail($id);
-        
-        // Validate the request
-        $request->validate([
-            'plan' => 'required|in:basic,premium,ultimate',
-            'domain' => 'required|string|exists:tenants,domain',
-            'email' => 'required|email|exists:tenants,email',
-        ]);
+        $tenant->update(['plan' => 'premium']);
 
-        // Check if the provided domain and email match the tenant
-        if ($request->domain !== $tenant->domain || $request->email !== $tenant->email) {
-            return redirect()->back()->with('error', 'Invalid tenant information provided.');
-        }
+        return redirect()->back()->with('success', 'Tenant account has been upgraded to premium.');
+    }
 
-        // Update tenant with plan information
-        $tenant->update([
-            'is_premium' => true,
-            'plan_type' => $request->plan,
-            'plan_started_at' => now(),
-        ]);
+    public function basic($id)
+    {
+        $tenant = Tenant::findOrFail($id);
+        $tenant->update(['plan' => 'basic']);
 
-        // Send email notification
-        Mail::send('emails.tenant-premium', [
-            'tenant' => $tenant,
-            'plan' => $request->plan,
-        ], function ($message) use ($tenant) {
-            $message->to($tenant->email)
-                   ->subject('Your Account Has Been Upgraded to ' . ucfirst($tenant->plan_type) . ' Plan');
-        });
-
-        return redirect()->back()->with('status', 'Tenant account has been upgraded to ' . ucfirst($request->plan) . ' plan.');
+        return redirect()->back()->with('success', 'Tenant account has been downgraded to basic.');
     }
 
     public function create()
@@ -245,9 +233,14 @@ class TenantController extends Controller
              ->table('bookings')
              ->count(); 
 
+        $pendingBookings = DB::connection('tenant')
+             ->table('bookings')
+             ->where('status', 'pending')
+             ->count();
+
 
  
-         return view('tenant.dashboard', compact('bookings', 'userCount', 'approvedBookings', 'rejectedBookings', 'allBookings'));
+         return view('tenant.dashboard', compact('bookings', 'userCount', 'approvedBookings', 'rejectedBookings', 'allBookings', 'pendingBookings'));
          
     }
 
@@ -286,6 +279,24 @@ class TenantController extends Controller
         Config::set('database.connections.tenant.database', $tenant->database_name);
         DB::purge('tenant');
         DB::reconnect('tenant');
+
+        // Validate role limits
+        $role = $request->role;
+        $existingAdmins = SecondaryAdmin::where('tenant_id', $tenant->id)->get();
+
+        if ($role === 'captain') {
+            if ($existingAdmins->where('role', 'captain')->count() >= 1) {
+                return back()->with('error', 'Only one captain is allowed.');
+            }
+        } elseif ($role === 'secretary') {
+            if ($existingAdmins->where('role', 'secretary')->count() >= 1) {
+                return back()->with('error', 'Only one secretary is allowed.');
+            }
+        } elseif ($role === 'sk') {
+            if ($existingAdmins->where('role', 'sk')->count() >= 7) {
+                return back()->with('error', 'A maximum of 7 SK members are allowed.');
+            }
+        }
 
         // Generate a random password
         $password = 'password'; //Str::random(10);
@@ -371,15 +382,88 @@ class TenantController extends Controller
     // Users Management
     public function users()
     {
-    
-      
-
         $users = TenantUser::all();
         return view('tenant.users.index', compact('users'));
-        
-        
     }
-    
+
+    public function profile()
+    {
+        $tenant = Tenant::find(session('tenant_id'));
+        return view('tenant.profile', compact('tenant'));
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:tenants,email,' . session('tenant_id'),
+            'address' => 'nullable|string|max:255',
+            'contact_number' => 'nullable|string|max:20',
+        ]);
+
+        $tenant = Tenant::find(session('tenant_id'));
+        $tenant->update([
+            'name' => $request->name,
+            'email' => $request->email,
+            'address' => $request->address,
+            'contact_number' => $request->contact_number,
+        ]);
+
+        // Update session data
+        session([
+            'tenant_name' => $request->name,
+            'tenant_email' => $request->email,
+            'tenant_address' => $request->address,
+            'tenant_contact' => $request->contact_number,
+        ]);
+
+        return redirect()->route('tenant.profile')->with('success', 'Profile updated successfully.');
+    }
+
+    public function settings()
+    {
+        $tenant = Tenant::find(session('tenant_id'));
+        return view('tenant.settings', compact('tenant'));
+    }
+
+    public function updateSettings(Request $request)
+    {
+        $tenant = Tenant::find(session('tenant_id'));
+
+        if ($request->has('current_password')) {
+            $request->validate([
+                'current_password' => 'required',
+                'new_password' => 'required|string|min:8|confirmed',
+            ]);
+
+            if (!Hash::check($request->current_password, $tenant->password)) {
+                return back()->withErrors(['current_password' => 'The current password is incorrect.']);
+            }
+
+            $tenant->update([
+                'password' => Hash::make($request->new_password)
+            ]);
+
+            return redirect()->route('tenant.settings')->with('success', 'Password updated successfully.');
+        }
+
+        if ($request->has('email_notifications') || $request->has('sms_notifications')) {
+            $tenant->update([
+                'email_notifications' => $request->has('email_notifications'),
+                'sms_notifications' => $request->has('sms_notifications')
+            ]);
+
+            // Update session data
+            session([
+                'tenant_email_notifications' => $request->has('email_notifications'),
+                'tenant_sms_notifications' => $request->has('sms_notifications')
+            ]);
+
+            return redirect()->route('tenant.settings')->with('success', 'Notification preferences updated successfully.');
+        }
+
+        return back()->with('error', 'No changes were made.');
+    }
 
     // Bookings Management
     public function bookings()
@@ -452,7 +536,7 @@ class TenantController extends Controller
                 'tenant_database' => $tenant->database_name
             ]);
 
-            return redirect()->route('tenant.bookings')
+            return redirect()->route('tenant.bookings.index')
                 ->with('success', 'Booking accepted successfully.');
 
         } catch (\Exception $e) {
@@ -491,7 +575,7 @@ class TenantController extends Controller
             
 
 
-        return redirect()->route('tenant.bookings')
+        return redirect()->route('tenant.bookings.index')
             ->with('success', 'Booking rejected successfully.');
     }
 
@@ -531,7 +615,7 @@ class TenantController extends Controller
         // return redirect()->route('tenant.bookings')
         //     ->with('success', 'Booking created successfully.');
 
-        return redirect()->route('tenant.bookings')
+        return redirect()->route('tenant.bookings.index')
             ->with('success', 'Booking created successfully.');
     }
 
@@ -587,7 +671,48 @@ class TenantController extends Controller
     {
         $booking = Booking::findOrFail($id);
         $booking->delete();
-        return redirect()->route('tenant.bookings')->with('success', 'Booking deleted successfully.');
+        return redirect()->route('tenant.bookings.index')->with('success', 'Booking deleted successfully.');
+    }
+
+    public function showBooking($id)
+    {
+        try {
+            // Get the tenant from the domain
+            $domain = request()->getHost();
+            $domain = str_replace('.localhost', '', $domain);
+            
+            $tenant = Tenant::where('domain', $domain)
+                           ->where('status', 'accepted')
+                           ->first();
+
+            if (!$tenant) {
+                return back()->with('error', 'Invalid tenant domain.');
+            }
+
+            // Set the tenant's database connection
+            Config::set('database.connections.tenant.database', $tenant->database_name);
+            DB::purge('tenant');
+            DB::reconnect('tenant');
+
+            // Get the booking details
+            $booking = DB::connection('tenant')
+                ->table('bookings')
+                ->where('id', $id)
+                ->first();
+
+            if (!$booking) {
+                return back()->with('error', 'Booking not found.');
+            }
+
+            return view('tenant.bookings.show', compact('booking'));
+
+        } catch (\Exception $e) {
+            \Log::error('Error showing booking', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->with('error', 'Failed to load booking details. Please try again.');
+        }
     }
 
     // Calendar
@@ -640,6 +765,24 @@ class TenantController extends Controller
             ]);
             return back()->with('error', 'Failed to load calendar data. Please try again.');
         }
+    }
+
+    public function upgradePlan(Request $request)
+    {
+        $request->validate([
+            'plan' => 'required|in:basic,premium,ultimate',
+        ]);
+
+        $tenant = Tenant::find(session('tenant_id'));
+        if (!$tenant) {
+            return back()->with('error', 'Tenant not found.');
+        }
+
+        if (PlanService::updateTenantPlan($tenant, $request->plan)) {
+            return back()->with('success', 'Plan upgraded successfully.');
+        }
+
+        return back()->with('error', 'Failed to upgrade plan.');
     }
 
 }

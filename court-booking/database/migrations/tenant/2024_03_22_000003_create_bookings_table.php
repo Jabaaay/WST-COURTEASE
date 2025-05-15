@@ -19,6 +19,7 @@ return new class extends Migration
             $table->date('start_date');
             $table->date('end_date');
             $table->enum('status', ['pending', 'confirmed', 'cancelled'])->default('pending');
+            $table->string('google_calendar_event_id')->nullable();
             $table->timestamps();
         });
     }

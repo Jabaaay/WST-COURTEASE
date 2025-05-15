@@ -3,6 +3,7 @@
 <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
 <link rel="shortcut icon" href="{{ asset('assets/images/favicon.png') }}" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
 
 
 <div class="container-scroller">
@@ -16,8 +17,8 @@
 
                 <div class="content-wrapper">
 
-                <div class="row" >
-                <div class="col-sm-3 grid-margin">
+                <div class="row" id="draggable-cards">
+                <div class="col-sm-3 grid-margin draggable-card">
                 <div class="card border-info">
                   <div class="card-body">
                     <h5>Total Bookings</h5>
@@ -35,7 +36,7 @@
                 </div>
               </div>
 
-              <div class="col-sm-3 grid-margin">
+              <div class="col-sm-3 grid-margin draggable-card">
                 <div class="card border-success">
                   <div class="card-body">
                     <h5>Approved</h5>
@@ -53,7 +54,7 @@
                 </div>
               </div>
 
-              <div class="col-sm-3 grid-margin">
+              <div class="col-sm-3 grid-margin draggable-card">
                 <div class="card border-danger">
                   <div class="card-body">
                     <h5>Rejected</h5>
@@ -71,7 +72,7 @@
                 </div>
               </div>
 
-              <div class="col-sm-3 grid-margin">
+              <div class="col-sm-3 grid-margin draggable-card">
                 <div class="card border-primary">
                   <div class="card-body">
                     <h5>Users</h5>
@@ -94,12 +95,12 @@
 
                 </div>
                 
-                    <div class="row ">
+                    <div class="row " id="draggable-charts">
 
 
                   
 
-                    <div class="col-lg-6 grid-margin stretch-card">
+                    <div class="col-lg-6 grid-margin stretch-card draggable-card">
                       <div class="card">
                         <div class="card-body">
                           <h4 class="card-title">Bar chart</h4>
@@ -108,7 +109,7 @@
                       </div>
                     </div>
 
-              <div class="col-lg-6 grid-margin stretch-card">
+              <div class="col-lg-6 grid-margin stretch-card draggable-card">
                 <div class="card">
                   <div class="card-body">
                     <h4 class="card-title">Pie chart</h4>
@@ -116,7 +117,7 @@
                   </div>
                 </div>
               </div>
-                    <div class="col-12 grid-margin">
+                    <div class="col-12 grid-margin draggable-card">
                         <div class="card">
                         <div class="card-body">
                             <h4 class="card-title d-flex justify-content-between">Recent Bookings
@@ -199,6 +200,46 @@
 
 <script src="{{ asset('assets/js/chart.js') }}"></script>
 
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+
+<script>
+  var bookingStats = {
+    approved: {{ $approvedBookings ?? 0 }},
+    rejected: {{ $rejectedBookings ?? 0 }},
+    pending: {{ $pendingBookings ?? 0 }}
+  };
+
+  $(document).ready(function() {
+    // Make cards draggable
+    $(".draggable-card").draggable({
+      handle: ".card",
+      cursor: "move",
+      revert: "invalid",
+      helper: "clone",
+      start: function(event, ui) {
+        $(this).css("opacity", "0.5");
+      },
+      stop: function(event, ui) {
+        $(this).css("opacity", "1");
+      }
+    });
+
+    // Make the container droppable
+    $("#draggable-cards, #draggable-charts").droppable({
+      accept: ".draggable-card",
+      drop: function(event, ui) {
+        var droppedCard = ui.draggable;
+        var targetContainer = $(this);
+        
+        // Move the card to the new position
+        droppedCard.appendTo(targetContainer);
+        
+        // Reinitialize the grid system
+        droppedCard.find('.col-sm-3, .col-lg-6').removeClass('col-sm-3 col-lg-6').addClass('col-sm-3');
+      }
+    });
+  });
+</script>
 
 
 

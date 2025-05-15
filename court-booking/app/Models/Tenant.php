@@ -21,7 +21,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
         'password',
         'database_name',
         'is_premium',
-        'plan_type',
+        'plan',
         'plan_started_at',
     ];
 
@@ -45,7 +45,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
             'password',
             'database_name',
             'is_premium',
-            'plan_type',
+            'plan',
             'plan_started_at',
         ];
     }

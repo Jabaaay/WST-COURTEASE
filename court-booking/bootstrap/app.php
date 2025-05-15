@@ -23,7 +23,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'password.confirm' => \Illuminate\Auth\Middleware\RequirePassword::class,
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
             'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-            'secondary-admin' => \App\Http\Middleware\SecondaryAdminMiddleware::class,  
+            'secondary-admin' => \App\Http\Middleware\SecondaryAdminMiddleware::class, 
+            'check.user.booking' => \App\Http\Middleware\CheckUserBookingLimits::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

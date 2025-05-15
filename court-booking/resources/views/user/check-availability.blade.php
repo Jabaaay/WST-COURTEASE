@@ -135,8 +135,8 @@
                         title: '{{ $booking->event_name }}',
                         start: '{{ $booking->start_date }}',
                         end: '{{ $booking->end_date }}',
-                        backgroundColor: '#28a745', // Green for booked
-                        borderColor: '#28a745',
+                        backgroundColor: new Date('{{ $booking->end_date }}') < new Date() ? '#dc3545' : '#28a745', // Red for overdue, Green for active
+                        borderColor: new Date('{{ $booking->end_date }}') < new Date() ? '#dc3545' : '#28a745',
                         extendedProps: {
                             name: '{{ $booking->name }}',
                             event_name: '{{ $booking->event_name }}',
@@ -150,16 +150,22 @@
                 @endforeach
             ],
             eventClick: function(info) {
-                if (info.event.backgroundColor === '#28a745') { // Only show modal for bookings
-                    $('#bookingModal .name').text('Name: ' + info.event.    extendedProps.name);
+                // Show modal for both availability and booking events
+                if (info.event.backgroundColor === '#28a745') { // Booking event
+                    $('#bookingModal .name').text('Name: ' + info.event.extendedProps.name);
                     $('#bookingModal .event-title').text('Event Name: ' + info.event.extendedProps.event_name);
                     $('#bookingModal .start-date').text('Start Date: ' + info.event.extendedProps.start_time);
                     $('#bookingModal .end-date').text('End Date: ' + info.event.extendedProps.end_time);
                     $('#bookingModal .description').text('Description: ' + info.event.extendedProps.description);
                     $('#bookingModal .participant').text('Number of Participants: ' + info.event.extendedProps.participant);
                     $('#bookingModal .request').text('Equipment Request: ' + info.event.extendedProps.request);
-                    $('#bookingModal').modal('show');
+                } else { // Availability event
+                    $('#bookingModal .name').text('Official Use');
+                    $('#bookingModal .event-title').text('Event Name: ' + info.event.title);
+                    $('#bookingModal .start-date').text('Start Date: ' + info.event.start);
+                    $('#bookingModal .end-date').text('End Date: ' + info.event.end);
                 }
+                $('#bookingModal').modal('show');
             },
             eventDidMount: function(info) {
                 // Add tooltip

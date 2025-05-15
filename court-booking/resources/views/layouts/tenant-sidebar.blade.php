@@ -33,7 +33,7 @@
             </li>
 
           <li class="nav-item menu-items">
-            <a class="nav-link {{ Request::is('tenant/bookings*') ? 'active bg-gradient-dark text-white' : '' }}" href="{{ route('tenant.bookings') }}">
+            <a class="nav-link {{ Request::is('tenant/bookings*') ? 'active bg-gradient-dark text-white' : '' }}" href="{{ route('tenant.bookings.index') }}">
               <span class="menu-icon">
                 <i class="mdi mdi-calendar-check"></i>
               </span>
@@ -74,4 +74,26 @@
                 <script src="{{ asset('assets/vendors/jvectormap/jquery-jvectormap.min.js') }}"></script>
                 <script src="{{ asset('assets/vendors/jvectormap/jquery-jvectormap-world-mill-en.js') }}"></script>
                 <script src="{{ asset('assets/vendors/owl-carousel-2/owl.carousel.min.js') }}"></script>
+
+<script src="{{ asset('assets/js/theme-settings.js') }}"></script>
+
+<script>
+    // Apply theme on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const savedTheme = localStorage.getItem('themeSettings');
+        if (savedTheme) {
+            const theme = JSON.parse(savedTheme);
+            // Apply sidebar colors
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.style.backgroundColor = theme.sidebar;
+            sidebar.style.color = theme.sidebarText;
+            
+            // Apply text color to all text elements in sidebar
+            const textElements = sidebar.querySelectorAll('.nav-item, .nav-link, .menu-title');
+            textElements.forEach(element => {
+                element.style.color = theme.sidebarText;
+            });
+        }
+    });
+</script>
 

@@ -2,7 +2,8 @@
 <link rel="stylesheet" href="{{ asset('assets/vendors/css/vendor.bundle.base.css') }}">
 <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
 <link rel="shortcut icon" href="{{ asset('assets/images/favicon.png') }}" />
-
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
 <div class="container-scroller">
 
@@ -21,7 +22,25 @@
                             <h4 class="card-title d-flex justify-content-between">Create Booking
                             </h4>
 
-                            <form action="{{ route('user.my-booking.store') }}" method="post">
+                            @if(session('error'))
+                                <script>
+                                    Swal.fire({
+            title: 'Error!',
+            text: "{{ session('error') }}",
+            imageUrl: 'https://cdn.jsdelivr.net/npm/bootstrap-icons/icons/exclamation-triangle-fill.svg',  // Custom Bootstrap icon
+            imageWidth: 100,  // Resize the icon
+            imageHeight: 100, // Resize the icon
+            background: '#1E3E62',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'Ok',
+            customClass: {
+                confirmButton: 'btn btn-outline-danger btn-fw', // Matches the Bootstrap style
+            }
+        })
+                                </script>
+                            @endif
+
+                            <form action="{{ route('user.my-booking.store') }}" method="post" id="bookingForm">
                                 @csrf
                                 <div class="form-group">
                                     <label for="event_name">Event Name</label>
@@ -33,11 +52,11 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="start_date">Start Date</label>
-                                    <input type="date" class="form-control" id="start_date" name="start_date" required>
+                                    <input type="datetime-local" class="form-control" id="start_date" name="start_date" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="end_date">End Date</label>
-                                    <input type="date" class="form-control" id="end_date" name="end_date" required>
+                                    <input type="datetime-local" class="form-control" id="end_date" name="end_date" required>
                                 </div>
                               
                                 <div class="form-group">
@@ -134,6 +153,59 @@ function toggleInput() {
 }
 // Add event listener for other request input
 document.getElementById('other_request_input').addEventListener('input', updateSelectedEquipment);
+
+// Date validation
+document.getElementById('start_date').addEventListener('change', validateDates);
+document.getElementById('end_date').addEventListener('change', validateDates);
+
+function validateDates() {
+    const startDate = new Date(document.getElementById('start_date').value);
+    const endDate = new Date(document.getElementById('end_date').value);
+    const now = new Date();
+
+    if (startDate < now) {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this action!",
+            imageUrl: 'https://cdn.jsdelivr.net/npm/bootstrap-icons/icons/exclamation-triangle-fill.svg',  // Custom Bootstrap icon
+            imageWidth: 100,  // Resize the icon
+            imageHeight: 100, // Resize the icon
+            background: '#1E3E62',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel',
+            customClass: {
+                confirmButton: 'btn btn-outline-danger', // Matches the Bootstrap style
+                cancelButton: 'btn btn-outline-warning' // Matches the secondary cancel style
+            }
+        });
+        document.getElementById('start_date').value = '';
+        return false;
+    }
+
+    if (endDate < startDate) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Invalid Date!',
+            text: 'End date must be after start date.',
+            confirmButtonColor: '#3085d6'
+        });
+        document.getElementById('end_date').value = '';
+        return false;
+    }
+
+    return true;
+}
+
+// Form submission validation
+document.getElementById('bookingForm').addEventListener('submit', function(e) {
+    if (!validateDates()) {
+        e.preventDefault();
+        return false;
+    }
+});
 </script>
 
 

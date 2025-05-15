@@ -154,10 +154,21 @@
                                                 @csrf
                                                 <button type="submit" class="btn btn-outline-warning">Disable</button>
                                             </form>
+
+                                            @if ($tenant->plan == 'basic')
                                             <form method="POST" action="{{ route('tenant.premium', $tenant->id) }}" class="d-inline">
                                                 @csrf
                                                 <button type="submit" class="btn btn-outline-info">Premium</button>
                                             </form>
+                                            @endif
+
+                                            @if ($tenant->plan == 'premium')
+                                                <form method="POST" action="{{ route('tenant.basic', $tenant->id) }}" class="d-inline">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-outline-danger">Basic</button>
+                                                </form>
+                                            @endif
+                                            
                                             @elseif ($tenant->status == 'disabled')
                                                 <form method="POST" action="{{ route('tenant.enable', $tenant->id) }}" class="d-inline">
                                                     @csrf

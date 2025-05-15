@@ -57,11 +57,11 @@
                                         <td>{{ $availability->start_date }}</td>
                                         <td>{{ $availability->end_date }}</td>
                                         <td>
-                                            <a href="{{ route('tenant.availability.edit', $availability->id) }}" class="btn btn-outline-info">Edit</a>
+                                            <a href="{{ route('tenant.availability.edit', $availability->id) }}" class="btn btn-outline-info btn-sm"><i class="mdi mdi-pencil"></i></a>
                                             <form id="delete-form-{{ $availability->id }}" action="{{ route('tenant.availability.destroy', $availability->id) }}" method="POST" class="d-inline">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="button" class="btn btn-outline-danger" onclick="confirmDelete({{ $availability->id }})">Delete</button>
+                                                <button type="button" class="btn btn-outline-danger btn-sm" onclick="confirmDelete({{ $availability->id }})"><i class="mdi mdi-delete"></i></button>
                                             </form>
                                         </td>
                                     </tr>

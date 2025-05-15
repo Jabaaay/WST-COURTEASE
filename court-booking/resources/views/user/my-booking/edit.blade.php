@@ -5,8 +5,8 @@
 
 
 <div class="container-scroller">
-    @include('layouts.tenant-sidebar')
-    @include('layouts.tenant-header')
+    @include('layouts.user-sidebar')
+    @include('layouts.user-header')
 
     <div class="container-fluid page-body-wrapper">
         <div class="main-panel">

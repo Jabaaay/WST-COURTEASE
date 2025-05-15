@@ -15,6 +15,10 @@ return new class extends Migration
             $table->string('password');
             $table->string('address')->nullable();
             $table->string('contact_number')->nullable();
+            $table->enum('plan', ['basic', 'premium', 'ultimate'])->default('basic');
+            $table->integer('weekly_booking_count')->default(0);
+            $table->integer('reschedule_count')->default(0);
+            $table->rememberToken();
             $table->timestamps();
         });
 

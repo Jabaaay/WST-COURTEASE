@@ -5,6 +5,7 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 
+
 <div class="container-scroller">
 
     @include('layouts.tenant-sidebar')
@@ -33,18 +34,8 @@
 
                         <div class="card">
                         <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                            <h4 class="card-title">Bookings</h4>
-                            <div class="dropdown">
-                        <button class="btn btn-outline-primary btn-fw dropdown-toggle" type="button" id="dropdownMenuButton1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Filter</button>
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                          <a class="dropdown-item {{ request()->query('status') == 'pending' ? 'active' : '' }}" href="{{ request()->fullUrlWithQuery(['status' => 'pending']) }}">Pending</a>
-                          <a class="dropdown-item {{ request()->query('status') == 'confirmed' ? 'active' : '' }}" href="{{ request()->fullUrlWithQuery(['status' => 'confirmed']) }}">Approved</a>
-                          <a class="dropdown-item {{ request()->query('status') == 'cancelled' ? 'active' : '' }}" href="{{ request()->fullUrlWithQuery(['status' => 'cancelled']) }}">Rejected</a>
-                          <a class="dropdown-item {{ !request()->query('status') ? 'active' : '' }}" href="{{ request()->url() }}">All</a>
-                        </div>
-                      </div>
-                            </div>
+                            <h4 class="card-title d-flex justify-content-between">Bookings
+                            </h4>
 
 
                             <div class="table-responsive">
@@ -54,15 +45,16 @@
                                 <tr class="text-center">
              
                                     <th>Event Name</th>
-                                    <th>Start Date</th>
-                                    <th>End Date</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
                                     <th>Equipment</th>
                                     <th>Status</th>
                                     <th>Action</th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                 
+                            
+                            
                                 @foreach($bookings as $booking)
                                 <tr class="text-center">
                                     <td class="text-center">{{ $booking->event_name }}</td>
@@ -92,20 +84,19 @@
                                             @method('PUT')
                                             <button type="submit" class="btn btn-outline-danger btn-sm"><i class="mdi mdi-close"></i></button>
                                         </form>
+                                        
                                         @endif
 
-                                       
                                         @if($booking->status == 'confirmed' || $booking->status == 'cancelled')
-                                            <form action="" method="POST" style="display: inline;">
-                                              
-                                                <button type="submit" class="btn btn-outline-info btn-sm"><i class="mdi mdi-eye"></i></button>
+                                            <a href="{{ route('tenant.bookings.show', $booking->id) }}" class="btn btn-outline-info btn-sm">
+                                                <i class="mdi mdi-eye"></i>
+                                            </a>
+                                            <form action="{{ route('tenant.bookings.destroy', $booking->id) }}" method="POST" style="display: inline;" id="delete-form-{{ $booking->id }}">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="button" class="btn btn-outline-danger btn-sm" onclick="confirmDelete({{ $booking->id }})"><i class="mdi mdi-delete"></i></button>
                                             </form>
-                                            <form action="{{ route('tenant.bookings.delete', $booking->id) }}" method="POST" style="display: inline;" id="delete-form-{{ $booking->id }}">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="confirmDelete({{ $booking->id }})"><i class="mdi mdi-delete"></i></button>
-                                                </form>
-                                        @endif                                       
+                                        @endif
                                     </td>
                                 </tr>
                                 @endforeach
@@ -118,11 +109,8 @@
                                 {{ $bookings->links('pagination::bootstrap-5') }}
                             </div>
                             </div>
-                            
                         </div>
-                        
                         </div>
-                        
                     </div>
                     </div>
                 </div>
@@ -145,7 +133,6 @@
 <script src="{{ asset('assets/js/todolist.js') }}"></script>
 
 <script src="{{ asset('assets/js/dashboard.js') }}"></script>
-
 
 <script>
     function confirmDelete(id) {
@@ -172,6 +159,48 @@
             }
         })
     }
+
+    document.querySelectorAll('.approve-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Approve Booking?',
+                text: 'Are you sure you want to approve this booking?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, approve',
+                cancelButtonText: 'Cancel',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    btn.closest('form').submit();
+                }
+            });
+        });
+    });
+    document.querySelectorAll('.reject-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Reject Booking?',
+                text: 'Are you sure you want to reject this booking?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, reject',
+                cancelButtonText: 'Cancel',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    btn.closest('form').submit();
+                }
+            });
+        });
+    });
 </script>
+
+
+
 
 

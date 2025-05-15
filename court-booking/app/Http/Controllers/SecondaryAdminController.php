@@ -86,10 +86,49 @@ class SecondaryAdminController extends Controller
              ->table('bookings')
              ->count(); 
 
+        $pendingBookings = DB::connection('tenant')
+             ->table('bookings')
+             ->where('status', 'pending')
+             ->count();
+
              
-        return view('secondary-admin.dashboard', compact('bookings', 'userCount', 'approvedBookings', 'rejectedBookings', 'allBookings'));
+        return view('secondary-admin.dashboard', compact('bookings', 'userCount', 'approvedBookings', 'rejectedBookings', 'allBookings', 'pendingBookings'));
 
 
+    }
+
+    public function approveBooking($id)
+    {
+        $domain = request()->getHost();
+        $domain = str_replace('.localhost', '', $domain);
+        $tenant = Tenant::where('domain', $domain)
+                       ->where('status', 'accepted')
+                       ->first();
+        if (!$tenant) {
+            return back()->with('error', 'Invalid tenant domain.');
+        }
+        Config::set('database.connections.tenant.database', $tenant->database_name);
+        DB::purge('tenant');
+        DB::reconnect('tenant');
+        DB::connection('tenant')->table('bookings')->where('id', $id)->update(['status' => 'confirmed']);
+        return back()->with('success', 'Booking approved!');
+    }
+
+    public function rejectBooking($id)
+    {
+        $domain = request()->getHost();
+        $domain = str_replace('.localhost', '', $domain);
+        $tenant = Tenant::where('domain', $domain)
+                       ->where('status', 'accepted')
+                       ->first();
+        if (!$tenant) {
+            return back()->with('error', 'Invalid tenant domain.');
+        }
+        Config::set('database.connections.tenant.database', $tenant->database_name);
+        DB::purge('tenant');
+        DB::reconnect('tenant');
+        DB::connection('tenant')->table('bookings')->where('id', $id)->update(['status' => 'cancelled']);
+        return back()->with('success', 'Booking rejected!');
     }
 
     public function bookings()
@@ -117,6 +156,47 @@ class SecondaryAdminController extends Controller
              ->paginate(10);
              
         return view('secondary-admin.bookings.index', compact('bookings'));
+    }
+
+    public function showBooking($id)
+    {
+        try {
+            // Get the tenant from the domain
+            $domain = request()->getHost();
+            $domain = str_replace('.localhost', '', $domain);
+            
+            $tenant = Tenant::where('domain', $domain)
+                           ->where('status', 'accepted')
+                           ->first();
+
+            if (!$tenant) {
+                return back()->with('error', 'Invalid tenant domain.');
+            }
+
+            // Set the tenant's database connection
+            Config::set('database.connections.tenant.database', $tenant->database_name);
+            DB::purge('tenant');
+            DB::reconnect('tenant');
+
+            // Get the booking details
+            $booking = DB::connection('tenant')
+                ->table('bookings')
+                ->where('id', $id)
+                ->first();
+
+            if (!$booking) {
+                return back()->with('error', 'Booking not found.');
+            }
+
+            return view('secondary-admin.bookings.show', compact('booking'));
+
+        } catch (\Exception $e) {
+            \Log::error('Error showing booking', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->with('error', 'Failed to load booking details. Please try again.');
+        }
     }
 
     public function deleteBooking($id)
@@ -353,4 +433,37 @@ class SecondaryAdminController extends Controller
         }
 
     }
+
+    public function profile()
+    {
+
+
+            // Get the tenant from the domain
+            $domain = request()->getHost();
+            $domain = str_replace('.localhost', '', $domain);
+            
+            $tenant = Tenant::where('domain', $domain)
+                           ->where('status', 'accepted')
+                           ->first();
+    
+            if (!$tenant) {
+                return back()->with('error', 'Invalid tenant domain.');
+            }
+    
+            // Set the tenant's database connection
+            Config::set('database.connections.tenant.database', $tenant->database_name);
+            DB::purge('tenant');
+            DB::reconnect('tenant');
+    
+            $secondaryAdmin = SecondaryAdmin::find(session('secondary_admin_id'));
+            return view('secondary-admin.profile', compact('secondaryAdmin'));
+        
+    }
+
+    public function settings()
+    {
+        return view('secondary-admin.settings');
+    }
+    
+    
 }

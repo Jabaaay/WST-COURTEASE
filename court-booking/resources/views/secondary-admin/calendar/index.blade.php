@@ -108,9 +108,9 @@
                         title: '{{ $booking->event_name }}',
                         start: '{{ $booking->start_date }}',
                         end: '{{ $booking->end_date }}',
-                        backgroundColor: '#28a745', // Green for booked
+                        backgroundColor: new Date('{{ $booking->end_date }}') < new Date() ? '#dc3545' : '#28a745', // Red for overdue, Green for active
                         size: 'large',
-                        borderColor: '#28a745',
+                        borderColor: new Date('{{ $booking->end_date }}') < new Date() ? '#dc3545' : '#28a745',
                         extendedProps: {
                             name: '{{ $booking->name }}',
                             event_name: '{{ $booking->event_name }}',

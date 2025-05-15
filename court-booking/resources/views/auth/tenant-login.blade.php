@@ -10,6 +10,8 @@
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
         <!-- Poppins Font -->
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+        <!-- reCAPTCHA -->
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <style>
@@ -26,7 +28,8 @@
 
                 @if ($errors->any())
                                 <div class="alert alert-danger">
-                                    <div class="d-flex justify-content-between align-items-center">Invalid Email or Password!
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        {{ $errors->first() }}
                                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                                     </div>
                                 </div>
@@ -55,6 +58,13 @@
                                 </div>
 
                                 <div class="mb-3">
+                                    <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"></div>
+                                    @error('g-recaptcha-response')
+                                        <span class="text-danger">{{ $message }}</span>
+                                    @enderror
+                                </div>
+
+                                <div class="mb-3">
                                     <a href="{{ route('auth.tenant-register-user') }}" class="text-decoration-none text-white text-sm">Don't have an account? <span class="text-warning">Register</span></a>
                                 </div>
 
@@ -67,12 +77,7 @@
 
                             </form>
 
-                            <div class="d-grid mt-3">
-                                <button type="button" class="btn btn-outline-info w-100 rounded-0">
-                                    <i class="bi bi-google text-white"></i>
-                                    Sign in with Google
-                                </button>
-                            </div>
+
                         </div>
                     </div>
                 </div>

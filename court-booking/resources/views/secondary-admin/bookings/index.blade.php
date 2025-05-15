@@ -74,28 +74,26 @@
                                     <td class="text-center">
 
                                         @if($booking->status == 'pending')
-                                        <form action="{{ route('tenant.bookings.accept', $booking->id) }}" method="POST" style="display: inline;">
+                                        <form action="{{ route('secondary-admin.bookings.approve', $booking->id) }}" method="POST" style="display: inline;" class="approve-form">
                                             @csrf
-                                            @method('PUT')
-                                            <button type="submit" class="btn btn-outline-success"><i class="mdi mdi-check"></i></button>
+                                            <button type="button" class="btn btn-outline-success approve-btn"><i class="mdi mdi-check"></i></button>
                                         </form>
-                                        <form action="{{ route('tenant.bookings.reject', $booking->id) }}" method="POST" style="display: inline;">
+                                        <form action="{{ route('secondary-admin.bookings.reject', $booking->id) }}" method="POST" style="display: inline;" class="reject-form">
                                             @csrf
-                                            @method('PUT')
-                                            <button type="submit" class="btn btn-outline-danger"><i class="mdi mdi-close"></i></button>
+                                            <button type="button" class="btn btn-outline-danger reject-btn"><i class="mdi mdi-close"></i></button>
                                         </form>
+                                        
                                         @endif
 
                                         @if($booking->status == 'confirmed' || $booking->status == 'cancelled')
-                                            <form action="" method="POST" style="display: inline;">
-                                              
-                                                <button type="submit" class="btn btn-outline-info btn-sm"><i class="mdi mdi-eye"></i></button>
-                                            </form>
+                                            <a href="{{ route('secondary-admin.bookings.show', $booking->id) }}" class="btn btn-outline-info btn-sm">
+                                                <i class="mdi mdi-eye"></i>
+                                            </a>
                                             <form action="{{ route('secondary-admin.bookings.delete', $booking->id) }}" method="POST" style="display: inline;" id="delete-form-{{ $booking->id }}">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="confirmDelete({{ $booking->id }})"><i class="mdi mdi-delete"></i></button>
-                                                </form>
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="button" class="btn btn-outline-danger btn-sm" onclick="confirmDelete({{ $booking->id }})"><i class="mdi mdi-delete"></i></button>
+                                            </form>
                                         @endif
                                     </td>
                                 </tr>
@@ -159,6 +157,45 @@
             }
         })
     }
+
+    document.querySelectorAll('.approve-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Approve Booking?',
+                text: 'Are you sure you want to approve this booking?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, approve',
+                cancelButtonText: 'Cancel',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    btn.closest('form').submit();
+                }
+            });
+        });
+    });
+    document.querySelectorAll('.reject-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Reject Booking?',
+                text: 'Are you sure you want to reject this booking?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, reject',
+                cancelButtonText: 'Cancel',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    btn.closest('form').submit();
+                }
+            });
+        });
+    });
 </script>
 
 
