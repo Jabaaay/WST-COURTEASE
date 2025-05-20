@@ -33,6 +33,18 @@
             </div>
         </div>
 
+        @if(session('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="alert alert-danger">
+                {{ session('error') }}
+            </div>
+        @endif
+
         <div class="row">
             <div class="col-12 grid-margin">
                 <div class="card">
@@ -56,7 +68,6 @@
                                 <label for="new_password_confirmation">Confirm New Password</label>
                                 <input type="password" class="form-control" id="new_password_confirmation" name="new_password_confirmation" required>
                             </div>
-
                             <button type="submit" class="btn btn-primary mr-2">Update Password</button>
                         </form>
                     </div>

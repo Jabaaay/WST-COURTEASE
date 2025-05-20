@@ -41,7 +41,7 @@
                 @endif
 
                 <div class="row">
-                    <div class="col-md-6 grid-margin stretch-card">
+                    <div class="col-md-12 grid-margin stretch-card">
                         <div class="card">
                             <div class="card-body">
                                 <h4 class="card-title">Change Password</h4>
@@ -70,39 +70,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-6 grid-margin stretch-card">
-                        <div class="card">
-                            <div class="card-body">
-                                <h4 class="card-title">Notification Preferences</h4>
-                                <form class="forms-sample" method="POST" action="{{ route('user.settings.update') }}">
-                                    @csrf
-                                    @method('PUT')
-                                    
-                                    <div class="form-group">
-                                        <div class="form-check form-check-warning">
-                                            <label class="form-check-label">
-                                                <input type="checkbox" class="form-check-input" name="email_notifications" {{ $user->email_notifications ? 'checked' : '' }}>
-                                                Email Notifications
-                                            </label>
-                                        </div>
-                                        <small class="form-text text-muted">Receive booking updates and reminders via email</small>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <div class="form-check form-check-warning">
-                                            <label class="form-check-label">
-                                                <input type="checkbox" class="form-check-input" name="sms_notifications" {{ $user->sms_notifications ? 'checked' : '' }}>
-                                                SMS Notifications
-                                            </label>
-                                        </div>
-                                        <small class="form-text text-muted">Receive booking updates and reminders via SMS</small>
-                                    </div>
-
-                                    <button type="submit" class="btn btn-primary mr-2">Save Preferences</button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
+                  
                 </div>
             </div>
         </div>

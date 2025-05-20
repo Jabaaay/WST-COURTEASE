@@ -33,12 +33,24 @@
             </div>
         </div>
 
+        @if(session('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="alert alert-danger">
+                {{ session('error') }}
+            </div>
+        @endif
+
         <div class="row">
             <div class="col-12 grid-margin">
                 <div class="card">
                     <div class="card-body">
                         <h4 class="card-title">Change Password</h4>
-                        <form class="forms-sample" method="POST" action="{{ route('user.settings.update') }}">
+                        <form class="forms-sample" method="POST" action="{{ route('secondary-admin.settings.update') }}">
                             @csrf
                             @method('PUT')
                             

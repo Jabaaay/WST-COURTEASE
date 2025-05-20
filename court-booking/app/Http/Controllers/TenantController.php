@@ -437,7 +437,7 @@ class TenantController extends Controller
             ]);
 
             if (!Hash::check($request->current_password, $tenant->password)) {
-                return back()->withErrors(['current_password' => 'The current password is incorrect.']);
+                return back()->with('error', 'The current password is incorrect.');
             }
 
             $tenant->update([

@@ -65,7 +65,8 @@ class TenantAuthController extends Controller
                     'user_email' => $tenantUser->email,
                     'user_name' => $tenantUser->first_name,
                     'address' => $tenantUser->address,
-                    'contact_number' => $tenantUser->contact_number
+                    'contact_number' => $tenantUser->contact_number,
+                    'user_password' => $tenantUser->password
                 ]);
                 
                 \Log::info('User session created', [
@@ -73,7 +74,8 @@ class TenantAuthController extends Controller
                     'user_name' => session('user_name'),
                     'user_email' => session('user_email'),
                     'address' => session('address'),
-                    'contact_number' => session('contact_number')
+                    'contact_number' => session('contact_number'),
+                    'user_password' => session('user_password')
                 ]);
                 
                 return redirect()->route('user.dashboard');
@@ -98,7 +100,8 @@ class TenantAuthController extends Controller
                     'tenant_domain' => $tenant->domain,
                     'tenant_email' => $tenant->email,
                     'tenant_database' => $tenant->database_name,
-                    'tenant_name' => $tenant->name
+                    'tenant_name' => $tenant->name,
+                    'tenant_password' => $tenant->password
                 ]);
                 
                 \Log::info('Tenant session created', [
@@ -106,7 +109,8 @@ class TenantAuthController extends Controller
                     'tenant_domain' => session('tenant_domain'),
                     'tenant_name' => session('tenant_name'),
                     'tenant_email' => session('tenant_email'),
-                    'tenant_status' => $tenant->status
+                    'tenant_status' => $tenant->status,
+                    'tenant_password' => session('tenant_password')
                 ]);
                 
                 return redirect()->route('tenant.dashboard');
@@ -128,14 +132,16 @@ class TenantAuthController extends Controller
                     'secondary_admin_id' => $secondaryAdmin->id,
                     'secondary_admin_email' => $secondaryAdmin->email,
                     'secondary_admin_name' => $secondaryAdmin->name,
-                    'secondary_admin_role' => $secondaryAdmin->role
+                    'secondary_admin_role' => $secondaryAdmin->role,
+                    'secondary_admin_password' => $secondaryAdmin->password
                 ]);
                 
                 \Log::info('Secondary admin session created', [
                     'secondary_admin_id' => session('secondary_admin_id'),
                     'secondary_admin_email' => session('secondary_admin_email'),
                     'secondary_admin_name' => session('secondary_admin_name'),
-                    'secondary_admin_role' => session('secondary_admin_role')
+                    'secondary_admin_role' => session('secondary_admin_role'),
+                    'secondary_admin_password' => session('secondary_admin_password')
                 ]);
                 
                 return redirect()->route('secondary-admin.dashboard');

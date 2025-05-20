@@ -13,6 +13,8 @@ use App\Http\Controllers\Tenant\UserRegistrationController;
 use App\Http\Controllers\Tenant\TenantAvailabilityController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\SecondaryAdminController;
+use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Tenant\TenantSettingsController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -129,6 +131,11 @@ Route::middleware(['tenant'])->group(function () {
 
     // Plan Upgrade Route
     Route::post('/tenant/upgrade-plan', [TenantController::class, 'upgradePlan'])->name('tenant.upgrade-plan');
+
+    // Tenant Settings Routes
+    Route::get('/settings', [TenantSettingsController::class, 'index'])->name('tenant.settings');
+    Route::put('/settings/theme', [TenantSettingsController::class, 'updateTheme'])->name('tenant.settings.theme.update');
+    Route::put('/settings/password', [TenantSettingsController::class, 'updatePassword'])->name('tenant.settings.update');
 });
 
 Route::middleware(['secondary-admin'])->group(function () {
@@ -144,6 +151,7 @@ Route::middleware(['secondary-admin'])->group(function () {
     Route::get('/secondary-admin/bookings/{id}', [SecondaryAdminController::class, 'showBooking'])->name('secondary-admin.bookings.show');
     Route::get('/secondary-admin/profile', [SecondaryAdminController::class, 'profile'])->name('secondary-admin.profile');
     Route::get('/secondary-admin/settings', [SecondaryAdminController::class, 'settings'])->name('secondary-admin.settings');
+    Route::put('/secondary-admin/settings', [SecondaryAdminController::class, 'updateSettings'])->name('secondary-admin.settings.update');
     Route::post('/secondary-admin/bookings/{id}/approve', [SecondaryAdminController::class, 'approveBooking'])->name('secondary-admin.bookings.approve');
     Route::post('/secondary-admin/bookings/{id}/reject', [SecondaryAdminController::class, 'rejectBooking'])->name('secondary-admin.bookings.reject');
 });
@@ -160,5 +168,11 @@ Route::domain('{domain}.localhost')->group(function () {
 // Google Authentication Routes
 Route::get('auth/google', [GoogleController::class, 'redirectToGoogle'])->name('auth.google');
 Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback'])->name('auth.google.callback');
+
+// Admin Settings Routes
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('settings', [SettingsController::class, 'index'])->name('settings.index');
+    Route::put('settings', [SettingsController::class, 'update'])->name('settings.update');
+});
 
 require __DIR__.'/auth.php';

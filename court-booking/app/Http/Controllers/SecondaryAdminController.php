@@ -11,6 +11,7 @@ use App\Models\SecondaryAdmin;
 use App\Models\Booking;
 use App\Models\User;
 use App\Models\TenantAvailability;
+use Illuminate\Support\Facades\Hash;
 
 class SecondaryAdminController extends Controller
 {
@@ -464,6 +465,57 @@ class SecondaryAdminController extends Controller
     {
         return view('secondary-admin.settings');
     }
+
+    public function updateSettings(Request $request)
+    {
+        // Get the tenant from the domain
+        $domain = request()->getHost();
+        $domain = str_replace('.localhost', '', $domain);
+        
+        $tenant = Tenant::where('domain', $domain)
+                       ->where('status', 'accepted')
+                       ->first();
+
+        if (!$tenant) {
+            return back()->with('error', 'Invalid tenant domain.');
+        }
+
+        // Set the tenant's database connection
+        Config::set('database.connections.tenant.database', $tenant->database_name);
+        DB::purge('tenant');
+        DB::reconnect('tenant');
+
+        $secondaryAdmin = SecondaryAdmin::find(session('secondary_admin_id'));
+
+        if ($request->has('current_password')) {
+            $request->validate([
+                'current_password' => 'required',
+                'new_password' => 'required|string|min:8|confirmed',
+            ]);
+
+            if (!Hash::check($request->current_password, $secondaryAdmin->password)) {
+                return back()->withErrors(['current_password' => 'The current password is incorrect.']);
+            }
+
+            $secondaryAdmin->update([
+                'password' => Hash::make($request->new_password)
+            ]);
+
+            return redirect()->route('secondary-admin.settings')->with('success', 'Password updated successfully.');
+        }
+
+        if ($request->has('email_notifications') || $request->has('sms_notifications')) {
+            $secondaryAdmin->update([
+                'email_notifications' => $request->has('email_notifications'),
+                'sms_notifications' => $request->has('sms_notifications')
+            ]);
+
+            return redirect()->route('secondary-admin.settings')->with('success', 'Notification preferences updated successfully.');
+        }
+
+        return back()->with('error', 'No changes were made.');
+    }
+    
     
     
 }
