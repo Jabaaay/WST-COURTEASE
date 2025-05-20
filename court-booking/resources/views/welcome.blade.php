@@ -94,9 +94,7 @@
                             <a href="{{ url('/dashboard') }}" class="btn btn-outline-primary me-2">Dashboard</a>
                         @else
                             <a href="{{ route('login') }}" class="btn btn-outline-primary me-2">Log in</a>
-                            @if (Route::has('register'))
-                                <a href="{{ route('register') }}" class="btn btn-primary">Register</a>
-                            @endif
+                          
                         @endauth
                     @endif
                 </div>
@@ -110,7 +108,7 @@
                 <div class="text-center py-5">
                     <h1 class="display-4 fw-bold mb-4">
                         Welcome to CourtEase
-                        <span class="d-block text-light-emphasis">Your Smart Court Booking Solution</span>
+                        <span class="d-block text-light">Your Smart Court Booking Solution</span>
                     </h1>
                     <p class="lead mb-4">
                         Streamline your court booking process with our easy-to-use platform. Manage reservations, track availability, and enhance your facility's efficiency.
