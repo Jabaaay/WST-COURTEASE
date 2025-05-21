@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Tenant;
+use App\Http\Requests\TenantRegistrationRequest;
+use App\Http\Requests\SecondaryAdminRequest;
+use App\Http\Requests\TenantProfileRequest;
+use App\Http\Requests\TenantSettingsRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -33,14 +37,8 @@ class TenantController extends Controller
         return view('auth.tenant-register-user');
     }
 
-    public function register(Request $request)
+    public function register(TenantRegistrationRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:tenants',
-            'domain' => 'required|string|unique:tenants',
-        ]);
-
         Tenant::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -255,14 +253,8 @@ class TenantController extends Controller
         return view('tenant.secondary-admins.create');
     }
 
-    public function storeSecondaryAdmin(Request $request)
+    public function storeSecondaryAdmin(SecondaryAdminRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:secondary_admins,email',
-            'role' => 'required|in:sk,secretary,captain',
-        ]);
-
         // Get the tenant from the domain
         $domain = request()->getHost();
         $domain = str_replace('.localhost', '', $domain);
@@ -392,15 +384,8 @@ class TenantController extends Controller
         return view('tenant.profile', compact('tenant'));
     }
 
-    public function updateProfile(Request $request)
+    public function updateProfile(TenantProfileRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:tenants,email,' . session('tenant_id'),
-            'address' => 'nullable|string|max:255',
-            'contact_number' => 'nullable|string|max:20',
-        ]);
-
         $tenant = Tenant::find(session('tenant_id'));
         $tenant->update([
             'name' => $request->name,
@@ -426,16 +411,11 @@ class TenantController extends Controller
         return view('tenant.settings', compact('tenant'));
     }
 
-    public function updateSettings(Request $request)
+    public function updateSettings(TenantSettingsRequest $request)
     {
         $tenant = Tenant::find(session('tenant_id'));
 
         if ($request->has('current_password')) {
-            $request->validate([
-                'current_password' => 'required',
-                'new_password' => 'required|string|min:8|confirmed',
-            ]);
-
             if (!Hash::check($request->current_password, $tenant->password)) {
                 return back()->with('error', 'The current password is incorrect.');
             }

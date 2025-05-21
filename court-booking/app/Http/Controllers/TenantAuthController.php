@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use App\Http\Requests\TenantLoginRequest;
 
 class TenantAuthController extends Controller
 {
@@ -16,20 +17,14 @@ class TenantAuthController extends Controller
         return view('auth.tenant-login');
     }
 
-    public function login(Request $request)
+    public function login(TenantLoginRequest $request)
     {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
-            'g-recaptcha-response' => ['required', 'recaptcha'],
-        ]);
-
         // Get the tenant from the domain
         $domain = request()->getHost();
         $domain = str_replace('.localhost', '', $domain);
         
         \Log::info('Login attempt', [
-            'email' => $credentials['email'],
+            'email' => $request->email,
             'domain' => $domain
         ]);
         
@@ -50,12 +45,12 @@ class TenantAuthController extends Controller
         DB::reconnect('tenant');
 
         // Try to find a tenant user first
-        $tenantUser = \App\Models\TenantUser::where('email', $credentials['email'])->first();
+        $tenantUser = \App\Models\TenantUser::where('email', $request->email)->first();
         
         if ($tenantUser) {
             \Log::info('Found tenant user', ['user_id' => $tenantUser->id]);
             
-            if (Hash::check($credentials['password'], $tenantUser->password)) {
+            if (Hash::check($request->password, $tenantUser->password)) {
                 \Log::info('User password verified');
                 
                 // Store user in session
@@ -85,12 +80,12 @@ class TenantAuthController extends Controller
         }
 
         // If no tenant user found, try to find a tenant
-        $tenant = \App\Models\Tenant::where('email', $credentials['email'])->first();
+        $tenant = \App\Models\Tenant::where('email', $request->email)->first();
         
         if ($tenant) {
             \Log::info('Found tenant', ['tenant_id' => $tenant->id]);
             
-            if (Hash::check($credentials['password'], $tenant->password)) {
+            if (Hash::check($request->password, $tenant->password)) {
                 \Log::info('Tenant password verified');
                 
                 // Store tenant in session
@@ -120,11 +115,11 @@ class TenantAuthController extends Controller
         }
 
         // If no tenant user or tenant is found, check for secondary admin
-        $secondaryAdmin = \App\Models\SecondaryAdmin::where('email', $credentials['email'])->first();
+        $secondaryAdmin = \App\Models\SecondaryAdmin::where('email', $request->email)->first();
         if ($secondaryAdmin) {
             \Log::info('Found secondary admin', ['secondary_admin_id' => $secondaryAdmin->id]);
             
-            if (Hash::check($credentials['password'], $secondaryAdmin->password)) {
+            if (Hash::check($request->password, $secondaryAdmin->password)) {
                 \Log::info('Secondary admin password verified');
                 
                 session([

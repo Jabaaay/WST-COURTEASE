@@ -12,6 +12,7 @@ use App\Models\Booking;
 use App\Models\User;
 use App\Models\TenantAvailability;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Requests\SecondaryAdminLoginRequest;
 
 class SecondaryAdminController extends Controller
 {
@@ -26,13 +27,8 @@ class SecondaryAdminController extends Controller
         return redirect()->route('tenant.login');
     }
 
-    public function store(Request $request)
+    public function store(SecondaryAdminLoginRequest $request)
     {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
-
         if (Auth::guard('secondary-admin')->attempt(['email' => $request->email, 'password' => $request->password])) {
             return redirect()->route('secondary-admin.dashboard');
         }

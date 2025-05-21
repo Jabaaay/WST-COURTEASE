@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use App\Http\Requests\TenantAvailabilityRequest;
 
 class TenantAvailabilityController extends Controller
 {
@@ -27,15 +28,8 @@ class TenantAvailabilityController extends Controller
         return view('tenant.availability.create');
     }
 
-    public function store(Request $request)
+    public function store(TenantAvailabilityRequest $request)
     {
-        $request->validate([
-            'event_name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after:start_date',
-        ]);
-
         TenantAvailability::create([
             'tenant_id' => session('tenant')->id,
             'event_name' => $request->event_name,
@@ -76,7 +70,7 @@ class TenantAvailabilityController extends Controller
         return view('tenant.availability.edit', compact('availability'));
     }
 
-    public function updateAvailability(Request $request, $id)
+    public function updateAvailability(TenantAvailabilityRequest $request, $id)
     {
         try {
             // Get the tenant from the domain
@@ -95,13 +89,6 @@ class TenantAvailabilityController extends Controller
             Config::set('database.connections.tenant.database', $tenant->database_name);
             DB::purge('tenant');
             DB::reconnect('tenant');
-
-            $request->validate([
-                'event_name' => 'required|string|max:255',
-                'description' => 'nullable|string',
-                'start_date' => 'required|date',
-                'end_date' => 'required|date|after:start_date',
-            ]);
 
             $availability = TenantAvailability::where('tenant_id', $tenant->id)
                 ->findOrFail($id);

@@ -9,6 +9,7 @@ use App\Models\Tenant;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
+use App\Http\Requests\UserRegistrationRequest;
 
 class UserRegistrationController extends Controller
 {
@@ -17,16 +18,8 @@ class UserRegistrationController extends Controller
         return view('auth.tenant-register-user');
     }
 
-    public function register(Request $request)
+    public function register(UserRegistrationRequest $request)
     {
-        $request->validate([
-            'first_name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'address' => 'required|string|max:255',
-            'contact_number' => 'required|string|max:255',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
-
         // Get the tenant from the domain
         $domain = request()->getHost();
         $domain = str_replace('.localhost', '', $domain);
